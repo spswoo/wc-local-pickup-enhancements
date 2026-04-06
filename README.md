@@ -63,22 +63,6 @@ Enhance your WooCommerce store’s **local pickup experience** with a Shopify-st
 
 ---
 
-## Screenshots
-
-**Delivery Method Toggle:**  
-![Delivery Method Toggle](assets/delivery-toggle.png)  
-
-**Pickup Confirmation Modal:**  
-![Pickup Modal](assets/pickup-modal.png)  
-
-**Pickup Details with Google Maps Thumbnail:**  
-![Pickup Details](assets/pickup-details.png)  
-
-**Ready for Pickup Email Example:**  
-![Pickup Email](assets/pickup-email.png)  
-
----
-
 ## Changelog
 
 ### 3.0
