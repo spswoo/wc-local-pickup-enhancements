@@ -43,7 +43,6 @@ Enhance your WooCommerce store’s **local pickup experience** with a Shopify-st
    - Store Address  
    - Pickup Hours  
    - Instructions  
-   - Google Maps URL  
 
 ---
 
@@ -67,7 +66,6 @@ Enhance your WooCommerce store’s **local pickup experience** with a Shopify-st
 
 ### 3.0
 - Fully integrated pickup info replacing shipping fields  
-- Added Google Maps thumbnail for store location  
 - Confirmation modal for pickup selection  
 - Custom `Ready for Pickup` order status and email  
 - Admin settings panel for store info  
@@ -80,7 +78,7 @@ Enhance your WooCommerce store’s **local pickup experience** with a Shopify-st
 A: This version supports only a single pickup location. Multi-location support may be added in a future version.
 
 **Q: Do I need a Google Maps API key?**  
-A: Yes, for the static map thumbnail. Add your API key in the `Google Maps API URL field` if required. The thumbnail will be ignored if you choose not to enter an API key.
+A: No, the map location will be taken from the address provided in the settings.
 
 **Q: Does this work with WPML/multi-language sites?**  
 A: Currently, pickup info is static. WPML support may be added in a future release.

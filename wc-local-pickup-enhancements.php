@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Local Pickup Enhancements
  * Description: Complete Local Pickup UX enhancements with settings, modal, emails, and custom order status.
  * Version: 2.1
- * Author: Anthony Nijmeh
+ * Author: spswoo
  */
 
 if (!defined('ABSPATH'))
@@ -89,11 +89,6 @@ class WC_Local_Pickup_Enhancements
                         <td><input type="text" name="wc_lpe_settings[map_url]"
                                 value="<?php echo esc_attr($opts['map_url'] ?? ''); ?>" style="width:400px;"></td>
                     </tr>
-                    <tr>
-                        <th>Google Maps API Key</th>
-                        <td><input type="text" name="wc_lpe_settings[map_api_key]"
-                                value="<?php echo esc_attr($opts['map_api_key'] ?? ''); ?>" style="width:400px;"></td>
-                    </tr>
                 </table>
 
                 <?php submit_button(); ?>
@@ -114,7 +109,6 @@ class WC_Local_Pickup_Enhancements
         $hours = esc_js($this->options['hours'] ?? '');
         $instructions = esc_js($this->options['instructions'] ?? '');
         $map_url = esc_js($this->options['map_url'] ?? '');
-        $map_api_key = esc_js($this->options['map_api_key'] ?? '');
 
 
         ?>
@@ -190,9 +184,7 @@ class WC_Local_Pickup_Enhancements
                             <?php echo $instructions; ?>
                         </p>
                         <a href="<?php echo $map_url; ?>" target="_blank" style="display:block; margin-top:10px;">
-            <img src="https://maps.googleapis.com/maps/api/staticmap?center=<?php echo urlencode($address); ?>&zoom=15&size=300x150&markers=color:red|<?php echo urlencode($address); ?>&key=<?php echo urlencode($map_api_key); ?>"
-                 alt="Store Map" style="width:100%; max-width:300px; border:1px solid #ccc;"/>
-            <span style="display:block; text-align:left; margin-top:5px;">View on Google Maps</span>
+                        <span style="display:block; text-align:left; margin-top:5px;">View on Google Maps</span>
         </a>
                     `).show();
                 }
