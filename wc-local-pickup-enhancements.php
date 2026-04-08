@@ -37,6 +37,16 @@ class WC_Local_Pickup_Enhancements
 
         // Add new email woocommerce email class
         add_filter('woocommerce_email_classes', [$this, 'register_ready_for_pickup_email']);
+
+        // Ensure that no shipping method is pre-selected
+        add_filter('woocommerce_shipping_chosen_method', '__return_false', 99);
+        // Alternative/Additional snippet to force no selection
+        add_action('woocommerce_before_checkout_form', 'bbloomer_uncheck_default_shipping_method');
+        function bbloomer_uncheck_default_shipping_method()
+        {
+            WC()->session->set('chosen_shipping_methods', null);
+        }
+
     }
 
     /** ----------------------------
@@ -166,7 +176,11 @@ class WC_Local_Pickup_Enhancements
                 let $pendingPickupInput = null;
 
                 function setPickupUI() {
-                    $('.woocommerce-shipping-fields').hide();
+                    //localStorage.setItem('shippingUI', document.querySelector('.woocommerce-shipping-fields').innerHTML);
+
+                    $('.woocommerce-shipping-fields')
+                        .hide()
+                        .css('display', 'none');
                     $('#ship-to-different-address').hide();
 
                     if ($('#pickup-box').length === 0) {
@@ -190,38 +204,51 @@ class WC_Local_Pickup_Enhancements
                 }
 
                 function setShippingUI() {
-                    $('.woocommerce-shipping-fields').show();
+
+                    //localStorage.setItem('shippingUI', document.querySelector('.woocommerce-shipping-fields').innerHTML)
+
+                    if (localStorage.getItem('shippingUI') !== undefined) {
+                        //document.querySelector('.woocommerce-shipping-fields').innerHTML = localStorage.getItem('shippingUI')
+                    }
+
+                    //console.log("Plugin Local Pickup: setShippingUI()");
+                    $('.woocommerce-shipping-fields')
+                        .show()
+                        .css('display', 'block')
+                        .removeClass('hidden');
                     $('#ship-to-different-address').show();
                     $('#pickup-box').hide();
                 }
 
                 function bindEvents() {
                     // FIX: Bind to WooCommerce's native shipping method radio buttons
-                    $('input[name^="shipping_method"]').off('change.pickup').on('change.pickup', function () {
-                        let val = $(this).val() || '';
+                    $(document.body).off('change.pickup', 'input[name^="shipping_method"]')
+                        .on('change.pickup', 'input[name^="shipping_method"]', function () {
+                            let val = $(this).val() || '';
 
-                        if (val.includes('local_pickup')) {
+                            if (val.includes('local_pickup')) {
 
-                            // If already confirmed, just update the UI — don't show the modal again
-                            if (pickupConfirmed) {
-                                setPickupUI();
-                                return;
+                                // If already confirmed, just update the UI — don't show the modal again
+                                if (pickupConfirmed) {
+                                    setPickupUI();
+                                    return;
+                                }
+                                // Store reference to this input so we can re-select it after confirmation
+                                $pendingPickupInput = $(this);
+
+                                // Revert selection to whatever was previously checked until user confirms
+                                $(this).prop('checked', false);
+                                $(document.body).trigger('update_checkout');
+
+                                // Show the confirmation modal
+                                $('#pickup-modal').fadeIn();
+
+                            } else {
+                                pickupConfirmed = false;
+                                $pendingPickupInput = null;
+                                setShippingUI();
                             }
-                            // Store reference to this input so we can re-select it after confirmation
-                            $pendingPickupInput = $(this);
-
-                            // Revert selection to whatever was previously checked until user confirms
-                            $('input[name^="shipping_method"]').not(this).first().prop('checked', true);
-
-                            // Show the confirmation modal
-                            $('#pickup-modal').fadeIn();
-
-                        } else {
-                            pickupConfirmed = false;
-                            $pendingPickupInput = null;
-                            setShippingUI();
-                        }
-                    });
+                        });
 
                     $('#confirm-pickup').off('click.pickup').on('click.pickup', function () {
                         $('#pickup-modal').fadeOut();
@@ -230,6 +257,7 @@ class WC_Local_Pickup_Enhancements
                         // Re-select the local pickup radio the user originally chose
                         if ($pendingPickupInput && $pendingPickupInput.length) {
                             $pendingPickupInput.prop('checked', true);
+                            $(document.body).trigger('update_checkout');
                         } else {
                             // Fallback: find any local_pickup input
                             $('input[name^="shipping_method"][value*="local_pickup"]').prop('checked', true);
@@ -249,14 +277,15 @@ class WC_Local_Pickup_Enhancements
                         if ($shipping.length) {
                             $shipping.prop('checked', true).trigger('change');
                         }
-
+                        console.log("Cancelled Pickup");
                         setShippingUI();
                     });
                 }
 
                 function init() {
+                    console.log("Plugin Local Pickup: Initialization");
                     // Don't reset UI while the user is mid-confirmation
-                    if (pickupConfirmed) return;
+                    //if (pickupConfirmed) return;
 
                     bindEvents();
 
@@ -272,18 +301,26 @@ class WC_Local_Pickup_Enhancements
                 }
 
                 // Initial load
+                //$(document.body).on('updated_checkout', function () {
                 init();
+
+                //});
 
                 // Re-run after checkout updates (e.g. coupon applied, address changed)
                 $(document.body).on('updated_checkout', function () {
-                    // FIX: Guard against undefined .val() after checkout refresh
+                    console.log("Plugin Local Pickup: Event: updated_checkout");
+                    bindEvents();
+
                     let selected = $('input[name^="shipping_method"]:checked').val() || '';
 
-                    if (!pickupConfirmed) {
-                        init();
-                    }
-
-                    if (!selected.includes('local_pickup') && !pickupConfirmed) {
+                    if (selected.includes('local_pickup')) {
+                        if (pickupConfirmed) {
+                            setPickupUI();
+                        } else {
+                            setShippingUI(); // don't force pickup until confirmed
+                        }
+                    } else {
+                        pickupConfirmed = false;
                         setShippingUI();
                     }
                 });
